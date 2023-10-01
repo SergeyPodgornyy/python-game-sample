@@ -8,3 +8,7 @@ Sample game using PyGame
 #### Run execution
 
     $ python3 main.py
+
+#### Result preview
+
+![Preview gif animation](https://github.com/SergeyPodgornyy/python-game-sample/blob/master/preview.gif)
