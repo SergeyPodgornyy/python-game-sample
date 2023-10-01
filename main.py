@@ -16,12 +16,16 @@ COLOR_GREEN = (71, 171, 5)
 COLOR_YELLOW = (255, 201, 23)
 COLOR_RED = (186, 12, 0)
 
+FONT = pygame.font.SysFont('Verdana', 20)
+
 main_display = pygame.display.set_mode((WIDTH, HEIGHT))
 
-PLAYER_SIZE = (20, 20)
+BACKGROUND = pygame.transform.scale(pygame.image.load('./images/background.png'), (WIDTH, HEIGHT))
+BACKGROUND_STEP = 3
+bg_X1 = 0
+bg_X2 = BACKGROUND.get_width()
 
-player = pygame.Surface(PLAYER_SIZE)
-player.fill(COLOR_WHITE)
+player = pygame.image.load('./images/player.png').convert_alpha()
 
 position = player.get_rect()
 
@@ -33,7 +37,7 @@ def create_enemy():
     enemy = pygame.Surface(ENEMY_SIZE)
     enemy.fill(random.choice(ENEMY_COLORS))
     position = pygame.Rect(WIDTH, random.randint(0, HEIGHT - 30), *ENEMY_SIZE)
-    step = [random.randint(-3, -1), 0]
+    step = [random.randint(-8, -4), 0]
 
     return [enemy, position, step]
 
@@ -45,7 +49,7 @@ def create_bonus():
     bonus = pygame.Surface(BONUS_SIZE)
     bonus.fill(random.choice(BONUS_COLORS))
     position = pygame.Rect(random.randint(0, WIDTH - 15), 0, *BONUS_SIZE)
-    step = [0, random.randint(1, 2)]
+    step = [0, random.randint(4, 8)]
 
     return [bonus, position, step]
 
@@ -55,13 +59,14 @@ pygame.time.set_timer(CREATE_ENEMY, ENEMY_CREATION_INTERVAL)
 CREATE_BONUS = CREATE_ENEMY + 1
 pygame.time.set_timer(CREATE_BONUS, BONUS_CREATION_INTERVAL)
 
-STEP_DOWN = [0, 1]
-STEP_UP = [0, -1]
-STEP_RIGHT = [1, 0]
-STEP_LEFT = [-1, 0]
+STEP_DOWN = [0, 4]
+STEP_UP = [0, -4]
+STEP_RIGHT = [4, 0]
+STEP_LEFT = [-4, 0]
 
 enemies = []
 bonuses = []
+score = 0
 FPS = 500
 in_progress = True
 
@@ -76,7 +81,17 @@ while in_progress:
         if event.type == CREATE_BONUS:
             bonuses.append(create_bonus())
     
-    main_display.fill(COLOR_BLACK)
+    bg_X1 -= BACKGROUND_STEP
+    bg_X2 -= BACKGROUND_STEP
+
+    if bg_X1 < -BACKGROUND.get_width():
+        bg_X1 = BACKGROUND.get_width()
+
+    if bg_X2 < -BACKGROUND.get_width():
+        bg_X2 = BACKGROUND.get_width()
+
+    main_display.blit(BACKGROUND, (bg_X1, 0))
+    main_display.blit(BACKGROUND, (bg_X2, 0))
 
     keys = pygame.key.get_pressed()
     player_step = [0, 0]
@@ -97,6 +112,10 @@ while in_progress:
         enemy[1] = enemy[1].move(enemy[2])
         main_display.blit(enemy[0], enemy[1])
 
+        if position.colliderect(enemy[1]):
+            print("Boom")
+            in_progress = False
+
         if enemy[1].left < 0:
             enemies.pop(enemies.index(enemy))
 
@@ -104,13 +123,15 @@ while in_progress:
         bonus[1] = bonus[1].move(bonus[2])
         main_display.blit(bonus[0], bonus[1])
 
+        if position.colliderect(bonus[1]):
+            score += 1
+            bonuses.pop(bonuses.index(bonus))
+
         if bonus[1].bottom > HEIGHT:
             bonuses.pop(bonuses.index(bonus))
 
+    main_display.blit(FONT.render(str(score), True, COLOR_BLACK), (WIDTH - 50, 20))
     main_display.blit(player, position)
     position = position.move(player_step)
-
-    print("Enemies count: ", len(enemies))
-    print("Bonuses count: ", len(bonuses))
 
     pygame.display.flip()
