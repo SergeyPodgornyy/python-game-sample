@@ -28,38 +28,46 @@ bg_X2 = BACKGROUND.get_width()
 
 PLAYER_IMAGE_PATH = './images/player'
 PLAYER_IMAGES = os.listdir(PLAYER_IMAGE_PATH)
+player_image_index = 0
 
-player = pygame.image.load('./images/player.png').convert_alpha()
+player = pygame.image.load(os.path.join(PLAYER_IMAGE_PATH, PLAYER_IMAGES[player_image_index])).convert_alpha()
 
-position = player.get_rect()
-
-ENEMY_SIZE = (30, 30)
-ENEMY_CREATION_INTERVAL = 750 # ms
-ENEMY_COLORS = [COLOR_BLUE, COLOR_GREEN, COLOR_RED]
+position = pygame.Rect(
+    250,
+    (HEIGHT - player.get_height()) / 2,
+    player.get_width(),
+    player.get_height()
+)
 
 def create_enemy():
-    enemy = pygame.Surface(ENEMY_SIZE)
-    enemy.fill(random.choice(ENEMY_COLORS))
-    position = pygame.Rect(WIDTH, random.randint(0, HEIGHT - 30), *ENEMY_SIZE)
+    enemy = pygame.image.load('./images/enemy.png').convert_alpha()
+    position = pygame.Rect(
+        WIDTH,
+        random.randint(0, HEIGHT - enemy.get_height()),
+        enemy.get_width(),
+        enemy.get_height()
+    )
     step = [random.randint(-8, -4), 0]
 
     return [enemy, position, step]
 
-BONUS_SIZE = (15, 15)
-BONUS_CREATION_INTERVAL = 1500 # ms
-BONUS_COLORS = [COLOR_CRIMSON, COLOR_YELLOW]
-
 def create_bonus():
-    bonus = pygame.Surface(BONUS_SIZE)
-    bonus.fill(random.choice(BONUS_COLORS))
-    position = pygame.Rect(random.randint(0, WIDTH - 15), 0, *BONUS_SIZE)
+    bonus = pygame.image.load('./images/bonus.png').convert_alpha()
+    position = pygame.Rect(
+        random.randint(0, WIDTH - bonus.get_width()),
+        -bonus.get_height(),
+        bonus.get_width(),
+        bonus.get_height()
+    )
     step = [0, random.randint(4, 8)]
 
     return [bonus, position, step]
 
+ENEMY_CREATION_INTERVAL = 1500 # ms
 CREATE_ENEMY = pygame.USEREVENT + 1
 pygame.time.set_timer(CREATE_ENEMY, ENEMY_CREATION_INTERVAL)
 
+BONUS_CREATION_INTERVAL = 3000 # ms
 CREATE_BONUS = CREATE_ENEMY + 1
 pygame.time.set_timer(CREATE_BONUS, BONUS_CREATION_INTERVAL)
 
@@ -73,7 +81,6 @@ STEP_LEFT = [-4, 0]
 
 enemies = []
 bonuses = []
-player_image_index = 0
 score = 0
 FPS = 500
 in_progress = True
@@ -89,11 +96,12 @@ while in_progress:
         if event.type == CREATE_BONUS:
             bonuses.append(create_bonus())
         if event.type == CHANGE_PLAYER_IMAGE:
-            player = pygame.image.load(os.path.join(PLAYER_IMAGE_PATH, PLAYER_IMAGES[player_image_index])).convert_alpha()
             player_image_index += 1
 
             if player_image_index == len(PLAYER_IMAGES):
                 player_image_index = 0
+
+            player = pygame.image.load(os.path.join(PLAYER_IMAGE_PATH, PLAYER_IMAGES[player_image_index])).convert_alpha()
     
     bg_X1 -= BACKGROUND_STEP
     bg_X2 -= BACKGROUND_STEP
@@ -127,10 +135,10 @@ while in_progress:
         main_display.blit(enemy[0], enemy[1])
 
         if position.colliderect(enemy[1]):
-            print("Boom")
+            print("Game over")
             in_progress = False
 
-        if enemy[1].left < 0:
+        if enemy[1].right < 0:
             enemies.pop(enemies.index(enemy))
 
     for bonus in bonuses:
