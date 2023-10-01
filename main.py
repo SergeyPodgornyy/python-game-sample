@@ -1,4 +1,5 @@
 import random
+import os
 import pygame
 
 from pygame.constants import QUIT, K_DOWN, K_UP, K_RIGHT, K_LEFT
@@ -24,6 +25,9 @@ BACKGROUND = pygame.transform.scale(pygame.image.load('./images/background.png')
 BACKGROUND_STEP = 3
 bg_X1 = 0
 bg_X2 = BACKGROUND.get_width()
+
+PLAYER_IMAGE_PATH = './images/player'
+PLAYER_IMAGES = os.listdir(PLAYER_IMAGE_PATH)
 
 player = pygame.image.load('./images/player.png').convert_alpha()
 
@@ -59,6 +63,9 @@ pygame.time.set_timer(CREATE_ENEMY, ENEMY_CREATION_INTERVAL)
 CREATE_BONUS = CREATE_ENEMY + 1
 pygame.time.set_timer(CREATE_BONUS, BONUS_CREATION_INTERVAL)
 
+CHANGE_PLAYER_IMAGE = CREATE_BONUS + 1
+pygame.time.set_timer(CHANGE_PLAYER_IMAGE, 200)
+
 STEP_DOWN = [0, 4]
 STEP_UP = [0, -4]
 STEP_RIGHT = [4, 0]
@@ -66,6 +73,7 @@ STEP_LEFT = [-4, 0]
 
 enemies = []
 bonuses = []
+player_image_index = 0
 score = 0
 FPS = 500
 in_progress = True
@@ -80,6 +88,12 @@ while in_progress:
             enemies.append(create_enemy())
         if event.type == CREATE_BONUS:
             bonuses.append(create_bonus())
+        if event.type == CHANGE_PLAYER_IMAGE:
+            player = pygame.image.load(os.path.join(PLAYER_IMAGE_PATH, PLAYER_IMAGES[player_image_index])).convert_alpha()
+            player_image_index += 1
+
+            if player_image_index == len(PLAYER_IMAGES):
+                player_image_index = 0
     
     bg_X1 -= BACKGROUND_STEP
     bg_X2 -= BACKGROUND_STEP
