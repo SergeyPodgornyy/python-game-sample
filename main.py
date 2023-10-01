@@ -145,6 +145,11 @@ while in_progress:
 
         enemy[1] = enemy[1].move(enemy[2])
 
+        for bonus in bonuses:
+            if bonus[1].colliderect(enemy[1]):
+                # enemy can destroy bonuses
+                bonuses.pop(bonuses.index(bonus))
+
         if position.colliderect(enemy[1]):
             print("Game over")
             game_over = True
