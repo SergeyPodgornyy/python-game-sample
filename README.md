@@ -3,7 +3,7 @@ Sample game using PyGame
 
 #### Install dependencies
 
-    $ pip install pygame
+    $ pip install -r requirements.txt
 
 #### Run execution
 
